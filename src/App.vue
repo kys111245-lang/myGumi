@@ -1154,6 +1154,25 @@ html, body {
   .btn-write { padding: 12px; }
   
   .scroll-controls { display: flex; }
-  .chat-panel { right: -15px; }
+  
+  /* 📱 모바일 챗봇 전체화면 설정 */
+  .chat-panel { 
+    position: fixed !important; 
+    top: 0 !important; 
+    left: 0 !important; 
+    width: 100vw !important; 
+    height: 100vh !important; 
+    height: 100dvh !important; /* 모바일 브라우저 주소창/하단바 짤림 완벽 방지 */
+    border-radius: 0 !important; 
+    z-index: 100000 !important; 
+    touch-action: auto !important; /* 모바일 화면에서 부드러운 스크롤 허용 */
+  }
+  .chat-header {
+    border-radius: 0 !important;
+    padding: 15px 20px !important;
+  }
+  .chat-input {
+    padding-bottom: 20px !important; /* 아이폰 등 모바일 하단 여백 확보 */
+  }
 }
 </style>
