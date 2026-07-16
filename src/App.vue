@@ -99,6 +99,15 @@
           
           <div v-for="date in daysInMonth" :key="date" class="day" @click="openDayPlanModal(getFormattedDate(date))">
             <span class="date-num" :class="{ 'today': isToday(date) }">{{ date }}</span>
+           
+            <!-- 👇 날씨 표시 -->
+             <div v-if="getWeatherForDate(getFormattedDate(date))" class="weather-chip">
+              <span class="weather-icon">{{ getWeatherIconInfo(getWeatherForDate(getFormattedDate(date)).code).icon }}</span>
+              <span class="weather-temp">
+                {{ getWeatherForDate(getFormattedDate(date)).max }}°/{{ getWeatherForDate(getFormattedDate(date)).min }}°
+              </span>
+            </div>
+
             <div class="schedule-list">
               <div 
                 v-for="item in getSchedulesForCalendar(getFormattedDate(date))" 
@@ -525,7 +534,68 @@ const goToSearchResult = async (item) => {
   selectedJsonItem.value = item;
   jsonViewMode.value = 'detail';
 };
-onMounted(() => loadAllJsonForSearch());
+
+// ==========================================
+// 날씨 예보 (Open-Meteo 연동 - API 키 불필요)
+// ==========================================
+const GUMI_LAT = 36.1195;
+const GUMI_LON = 128.3446;
+
+const weatherByDate = ref({}); // { '2026-07-16': { code, min, max }, ... }
+
+// WMO 날씨 코드 → 이모지/설명 매핑
+const weatherCodeMap = {
+  0: { icon: '☀️', desc: '맑음' },
+  1: { icon: '🌤️', desc: '대체로 맑음' },
+  2: { icon: '⛅', desc: '구름 조금' },
+  3: { icon: '☁️', desc: '흐림' },
+  45: { icon: '🌫️', desc: '안개' },
+  48: { icon: '🌫️', desc: '짙은 안개' },
+  51: { icon: '🌦️', desc: '약한 이슬비' },
+  53: { icon: '🌦️', desc: '이슬비' },
+  55: { icon: '🌧️', desc: '강한 이슬비' },
+  61: { icon: '🌦️', desc: '약한 비' },
+  63: { icon: '🌧️', desc: '비' },
+  65: { icon: '🌧️', desc: '강한 비' },
+  71: { icon: '🌨️', desc: '약한 눈' },
+  73: { icon: '🌨️', desc: '눈' },
+  75: { icon: '❄️', desc: '강한 눈' },
+  80: { icon: '🌦️', desc: '약한 소나기' },
+  81: { icon: '🌧️', desc: '소나기' },
+  82: { icon: '⛈️', desc: '강한 소나기' },
+  95: { icon: '⛈️', desc: '뇌우' },
+  96: { icon: '⛈️', desc: '우박 동반 뇌우' },
+  99: { icon: '⛈️', desc: '강한 우박 동반 뇌우' },
+};
+
+const getWeatherIconInfo = (code) => weatherCodeMap[code] || { icon: '❓', desc: '정보 없음' };
+
+const loadWeatherData = async () => {
+  try {
+    const res = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${GUMI_LAT}&longitude=${GUMI_LON}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Asia%2FSeoul&forecast_days=16`
+    );
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const result = {};
+    data.daily.time.forEach((date, idx) => {
+      result[date] = {
+        code: data.daily.weathercode[idx],
+        max: Math.round(data.daily.temperature_2m_max[idx]),
+        min: Math.round(data.daily.temperature_2m_min[idx]),
+      };
+    });
+
+    weatherByDate.value = result;
+  } catch (e) {
+    console.error('날씨 데이터 로드 실패:', e);
+  }
+};
+
+const getWeatherForDate = (dateString) => weatherByDate.value[dateString] || null;
+
+onMounted(() => loadAllJsonForSearch()); loadWeatherData(); // 검색 , 날씨
 
 const jsonViewMode = ref('list');
 const jsonItems = ref([]);
@@ -1321,6 +1391,17 @@ html, body {
 .chat-dismiss-zone { position: fixed; bottom: 0; left: 0; width: 100%; height: 100px; background: rgba(220, 53, 69, 0.8); color: white; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; font-weight: bold; z-index: 9998; transition: 0.2s; pointer-events: none;}
 .chat-dismiss-zone.hovering { background: rgba(220, 53, 69, 1); height: 120px; font-size: 1.4rem; }
 
+.weather-chip {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin: 0 4px 2px 4px;
+  font-size: 0.75rem;
+  color: #666;
+}
+.weather-icon { font-size: 0.9rem; }
+.weather-temp { white-space: nowrap; }
+
 @media (max-width: 900px) {
   .localhub-wrapper { height: auto; min-height: 100%; flex-direction: column; overflow: visible; }
   .sidebar-header { width: 100%; height: auto; border-right: none; border-bottom: none; z-index: 1000; padding: 0; flex-shrink: 0; overflow: visible;}
@@ -1368,6 +1449,11 @@ html, body {
   .chat-input {
     padding-bottom: 20px !important; /* 아이폰 등 모바일 하단 여백 확보 */
   }
+
+  /* 날씨캘린더 스타일 */
+  .weather-chip { font-size: 0.6rem; gap: 1px; }
+  .weather-icon { font-size: 0.75rem; }
+
 }
 /* ✨ AI 리뷰 분석 헤더 및 버튼 레이아웃 ✨ */
 .comment-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #f1f1f1; padding-bottom: 8px; }
