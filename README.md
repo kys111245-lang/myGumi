@@ -1,42 +1,64 @@
-# myGumi
+# myGumi — 구미·경북 지역 정보 웹앱
 
-This template should help get you started developing with Vue 3 in Vite.
+**지역 정보 검색, 개인 일정, 날씨 확인을 한 화면에서 연결하는 Vue 웹 프로토타입입니다.**
 
-## Recommended IDE Setup
+[화면 실행하기](https://kys111245-lang.github.io/myGumi/) · [검증 기록](docs/VERIFICATION.md)
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## 목적
 
-## Recommended Browser Setup
+관광지·음식점·행사 정보를 찾아본 뒤 일정을 정리하는 과정을 하나의 화면에서 탐색할 수 있도록 구성했습니다.
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## 주요 기능
 
-## Type Support for `.vue` Imports in TS
+| 기능 | 구현 방식 |
+| --- | --- |
+| 지역 정보 탐색 | 관광지·레포츠·문화시설·쇼핑·숙박·음식점·행사 JSON 검색 |
+| 일정 관리 | 월간 달력, 일정 등록·수정·삭제, 날짜별 조회 |
+| 날씨 | Open-Meteo 예보 조회 |
+| 게시판·댓글 | 브라우저 localStorage에 저장하는 프로토타입 |
+| 생성형 AI 기능 | 정보 요약·질문 응답·표현 보조를 위한 연동 코드 |
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## 구조
 
-## Customize configuration
+- **Vue 3:** 화면 상태와 사용자 상호작용
+- **Vite / TypeScript 도구 설정:** 개발 서버, 타입 검사, 빌드
+- **JSON:** 지역 정보 입력 자료
+- **localStorage:** 일정·게시글·댓글의 로컬 보관
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+핵심 화면과 동작은 `src/App.vue`, 지역 정보는 `public/`에 있습니다.
 
-## Project Setup
+## 실행
+
+Node.js 22.18 이상 또는 24.12 이상:
 
 ```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
+npm ci
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+검사와 빌드:
 
 ```sh
+npm run type-check
 npm run build
 ```
+
+## 공개 데모 범위
+
+공개 데모는 **지역 정보 탐색과 브라우저 내 일정·게시판 기능**을 보여줍니다.
+
+- 생성형 AI 키를 넣지 않은 빌드입니다. AI 호출 기능은 비활성 상태입니다.
+- VITE 환경변수는 브라우저 코드에 포함될 수 있습니다. 공개 빌드에 비밀키를 넣지 않습니다.
+- AI 기능의 공개 운영에는 서버 측 API 중계와 요청 제한을 추가해야 합니다.
+- 일정과 게시글은 현재 브라우저에 저장됩니다. 서버에 저장하거나 다른 사용자와 실시간 공유하는 서비스는 아닙니다.
+- 날씨 조회와 외부 이미지에는 인터넷 연결이 필요합니다.
+
+## 데이터
+
+기존 프로젝트에 포함된 구미·경북 지역 정보 JSON 7종을 사용합니다. 장소명·주소·이미지 URL 등은 원 데이터 제공처의 갱신 시점과 이용 조건을 따릅니다. 방문 전 최신 정보를 확인해야 합니다.
+
+## 포트폴리오 정리 사항
+
+템플릿 README를 실제 기능 설명으로 바꾸고 실행 방법, 저장 방식, AI 연동 범위를 구분했습니다. JavaScript로 작성된 Vue 컴포넌트가 TypeScript 프로젝트에 포함되도록 설정을 보완했습니다.
+
+정리 과정의 빌드 확인은 [검증 기록](docs/VERIFICATION.md)에 남겼습니다.
